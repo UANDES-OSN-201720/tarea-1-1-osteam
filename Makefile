@@ -2,14 +2,15 @@
 # compilacion (CFLAGS) y reglas de compilacion
 # para cada archivo objeto y el ejecutable final
 # (bank).
-CFLAGS=-g -std=c11 -Wall -D _BSD_SOURCE -pthread
+CFLAGS=-g -std=c11 -Wall -D _BSD_SOURCE -pthread -fpermissive
+DEPS = functions.h, child.h
 
 all: bank
 
 # Si se agregan archivos de codigo .c
 # para cada uno se debe agregar una regla
 # como las siguientes:
-main: main.c
+main: main.c funtions.h child.h
 	$(CC) $(CFLAGS) -o $@ $^
 
 # Esta regla crea el ejecutable final.

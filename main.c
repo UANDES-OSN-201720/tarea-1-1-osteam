@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include "child.h"
 
 // Cuenten con este codigo monolitico en una funcion
 // main como punto de partida.
