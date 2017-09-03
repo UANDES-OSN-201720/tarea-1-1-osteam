@@ -10,10 +10,15 @@ escucha al banco, etc. El segundo struct es params, el cual contiene los paramet
 las funciones para los threads. Esto incluye un arreglo de sucursales, su tamaño, asi como también 
 un identificador para el ID de una sucursal específica, etc. 
 El archivo functions.h tiene las siguientes funciones:
-función Find_suc, cuya función es encontrar una sucursal.
-función talk_suc, es la comunicación entre el banco y la sucursal, donde el banco le manda a la sucursal
+función Find_suc(), cuya función es encontrar una sucursal.
+función Talk_suc(), es la comunicación entre el banco y la sucursal, donde el banco le manda a la sucursal
 un mensaje a través del pipe asociado
-función init_suc, la cual inicializa la sucursal
+función Init_suc(), la cual inicializa la sucursal
 
-Actualmente las funciones del archivo child.h no estan definidas. Además, las funciones que fueron definidas
-en functions.h no están implementadas en el main.c
+La función Init_suc() se implementa a la hora de inicializar la sucursal en el main.c. Se inicializa cuando el
+usuario ingresa en la consola el comando "init". Esto crea una nueva sucursal, con sus atributos respectivos.
+Cabe notar que el usuario puede inicializar una sucursal con una cantidad definida de cuentas. En caso de que 
+el usuario no ingrese esta cantidad, por defecto se le entregarán 1000 cuentas a dicha sucursal.
+
+##Actualmente las funciones del archivo child.h no estan definidas. Además, las funciones que fueron definidas
+##en functions.h no están implementadas en el main.c
