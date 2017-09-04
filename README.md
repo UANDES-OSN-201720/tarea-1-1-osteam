@@ -20,5 +20,17 @@ usuario ingresa en la consola el comando "init". Esto crea una nueva sucursal, c
 Cabe notar que el usuario puede inicializar una sucursal con una cantidad definida de cuentas. En caso de que 
 el usuario no ingrese esta cantidad, por defecto se le entregarán 1000 cuentas a dicha sucursal.
 
+A la hora de trabajar con el comando init, tuvimos varios problemas en el camino, desde asignación de memoria con
+malloc, hasta problemas con la creación de una segunda sucursal. Uno de los grandes problemas que tuvimos con esto
+fue al momento de crear un segundo proceso hijo, donde nuestro programa se caía, pero solo el proceso padre, y los 
+hijos, es decir, las sucursales, seguían en funcionamiento. Una vez solucionado esto, el nuevo problema al cual nos
+enfrentamos fue respecto a las cuentas asociadas. Nos ocurrió que las cuentas, asi como también la cantidad de estas
+de cada sucursal, se reescribían en la memoria de la primera sucursal. Es decir, la primera sucursal quedaba con una cantidad
+determinada de clientes, mientras que las demás sucursales no tenían presencia de clientes. Decidimos, para ahorrar
+mayores problemas, en lugar de usar un realloc para modificar el tamaño del arreglo, hicimos un arreglo de tamaño
+fijo. Con esto solucionamos parcialmente el problema, dado que nuestro objetivo era intentar ocupar el realloc.
+
+  
+
 ##Actualmente las funciones del archivo child.h no estan definidas. Además, las funciones que fueron definidas
 ##en functions.h no están implementadas en el main.c
