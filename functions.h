@@ -11,7 +11,8 @@ typedef struct{
 	int pipein[2];
 	int pipeout[2];
 	pthread_t listen_thread;
-	int* accountid;
+	int clients_amount;
+	int accountid[1000];
 	char readbufersuc[80];
 	char readbuferbnk[80];
 } Suc;
@@ -39,14 +40,22 @@ Suc Find_suc(void* par){
 }
 
 // Necesary params: sucursal, msg
-void Talk_suc(void* par/*suc sucursal, char* msg*/){
+void* Talk_suc(void* par){
 	Params* var = (Params*)par;
 	write(var->sucursal.pipein[1], var->msg, strlen(var->msg)+1);
+	return NULL;
 }
 
-// Necesary params: suc_array, arrat_size
-void Init_suc(void* par/*suc* suc_array, int size_suc_array*/){
+// Necesary params: suc_array, array_size, clients, sucid
+void* Init_suc(void* par){
 	Params* var = (Params*)par;
 	var->suc_array = realloc(var->suc_array, var->array_size);
-	
+	var->suc_array[var->array_size - 1].ID = var->sucid;
+	pipe(var->suc_array[var->array_size - 1].pipein);
+	pipe(var->suc_array[var->array_size - 1].pipeout);
+	var->suc_array->clients_amount = var->clients;
+	for(int i = 0; i < var->clients; i++){
+		var->suc_array[var->array_size - 1].accountid[i] = i+1;
+	}
+	return NULL;
 }

@@ -19,6 +19,9 @@ int main(int argc, char** argv) {
 	size_t bufsize = 512;
 	char* commandBuf = malloc(sizeof(char)*bufsize);
 	const int bankId = getpid() % 1000;
+	Suc* suc_array = calloc(1, sizeof(Suc));
+	int array_size = 0;
+	Params* par = calloc(1, sizeof(Params));
 	printf("Bienvenido a Banco '%d'\n", bankId);
 
 	while (true) {
@@ -40,14 +43,22 @@ int main(int argc, char** argv) {
 			// Buscar en Google "fork bomb"
 			pid_t sucid = fork();
 
-
 			if (sucid > 0) {
-				printf("Sucursal creada con ID '%d'\n", sucid);
-
-				// Enviando saludo a la sucursal
-				char msg[] = "Hola sucursal, como estas?";
-				write(bankPipe[1], msg, (strlen(msg)+1));
-
+				printf("%d hiya! 1\n", sucid);
+				static int N;
+				char* n = &commandBuf[4];
+				N = atoi(n);
+				if(!N) N = 1000;
+				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
+				
+				array_size++;
+				printf("hiya! 2\n");
+				printf("hiya! 3\n");
+				par->sucid = sucid;
+				par->clients = N;
+				par->suc_array = suc_array;
+				par->array_size = array_size;
+				Init_suc((void*)par);
 				continue;
 			}
 			// Proceso de sucursal
@@ -55,16 +66,15 @@ int main(int argc, char** argv) {
 				int sucId = getpid() % 1000;
 				printf("Hola, soy la sucursal '%d'\n", sucId);
 				while (true) {
+					usleep(10000000);
 					// 100 milisegundos...
-					int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
+					/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
 					printf("Soy la sucursal '%d' y me llego mensaje '%s' de '%d' bytes.\n",
-					sucId, readbuffer, bytes);
+					sucId, readbuffer, bytes);*/
 
 					// Usar usleep para dormir una cantidad de microsegundos
-					// usleep(100000);
 
 					// Cerrar lado de lectura del pipe
-					close(bankPipe[0]);
 
 					// Para terminar, el proceso hijo debe llamar a _exit,
 					// debido a razones documentadas aqui:
@@ -78,6 +88,15 @@ int main(int argc, char** argv) {
 				return (EXIT_FAILURE);
 			}
 		}
+		else if(!strncmp("list", commandBuf, strlen("list"))){
+			for(int i = 0; i < array_size; i++){
+				printf("%d:", suc_array[i].ID);
+				for(int j = 0; j < suc_array[i].clients_amount; j++){
+					printf("%6d ",suc_array[i].accountid[j]);
+				}
+			printf("\n");
+			}
+		}
 		else {
 			fprintf(stderr, "Comando no reconocido.\n");
 		}
@@ -86,7 +105,6 @@ int main(int argc, char** argv) {
 
 	printf("Terminando ejecucion limpiamente...\n");
 	// Cerrar lado de escritura del pipe
-	close(bankPipe[1]);
 
 	return(EXIT_SUCCESS);
 }

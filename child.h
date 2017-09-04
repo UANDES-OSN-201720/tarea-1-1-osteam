@@ -1,5 +1,6 @@
 #include "functions.h"
 
+
 void Exec_suc(int pid){
 	
 }
