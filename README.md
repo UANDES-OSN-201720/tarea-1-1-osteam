@@ -41,7 +41,18 @@ proceso se elimine por su cuenta, y no que un proceso externo lo elimine.
 Al igual que kill, list tiene un funcionamiento bastante simple. Lo que hace es listar la lista de sucursales
 que existen hasta ese momento, junto con las cuentas asociadas a cada una de esas sucursales.
 
-  
+En el archivo child.h existen las siguientes funciones:
+función Listen_bank(), la cual lee lo que hay en el pipe que va desde el banco hasta la sucursal.
+función Exec_suc(), que crea el thread de la sucursal asociada. Además de esto, ejecuta todas las acciones que la 
+sucursal lea a través del pipe de entrada, el cual es el que va desde el banco hasta la sucursal, como por ejemplo 
+el comando "kill".
+función Talk_bank(), que le escribe al banco a través del pipe que va desde la sucursal hasta el banco.
 
-##Actualmente las funciones del archivo child.h no estan definidas. Además, las funciones que fueron definidas
-##en functions.h no están implementadas en el main.c
+Debido a la gran cantidad de complicaciones que tuvimos durante el desarrollo de la tarea, más específicamente con respecto
+al manejo de las sucursales, no nos dio el tiempo para terminar todo lo que debía ser desarrollado. Dentro de los aspectos que 
+no pudimos lograr fueron, por ejemplo, las transacciones bancarias de las sucursales, sean estas depósitos de dinero o 
+retiro de dinero. Tampoco logramos completar la comunicación desde la sucursal hasta el banco, dejando la función Talk_bank() en 
+blanco. Tampoco desarrollamos los comandos dump, que son los que guardan un archivo .SCV, lo que nos deja con mucho trabajo para 
+lo que es la segunda parte de esta primera tarea. Por último, el comando kill creemos que fue hecho de manera correcta, es decir, 
+la sucursal efectivamente lee el mensaje a través del pipe, y logra terminar el proceso, pero no logramos eliminarlo 
+del array de sucursales.
