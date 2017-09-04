@@ -19,9 +19,10 @@ int main(int argc, char** argv) {
 	size_t bufsize = 512;
 	char* commandBuf = malloc(sizeof(char)*bufsize);
 	const int bankId = getpid() % 1000;
-	Suc* suc_array = calloc(1, sizeof(Suc));
+	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
 	Params* par = calloc(1, sizeof(Params));
+	par->suc_array = suc_array;
 	printf("Bienvenido a Banco '%d'\n", bankId);
 
 	while (true) {
@@ -52,11 +53,8 @@ int main(int argc, char** argv) {
 				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
 				
 				array_size++;
-				printf("hiya! 2\n");
-				printf("hiya! 3\n");
 				par->sucid = sucid;
 				par->clients = N;
-				par->suc_array = suc_array;
 				par->array_size = array_size;
 				Init_suc((void*)par);
 				continue;
@@ -65,22 +63,24 @@ int main(int argc, char** argv) {
 			else if (!sucid) {
 				int sucId = getpid() % 1000;
 				printf("Hola, soy la sucursal '%d'\n", sucId);
-				while (true) {
-					usleep(10000000);
-					// 100 milisegundos...
-					/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
-					printf("Soy la sucursal '%d' y me llego mensaje '%s' de '%d' bytes.\n",
-					sucId, readbuffer, bytes);*/
+				par->array_size = array_size;
+				par->sucid = sucId;
+				par->sucursal = Find_suc((void*)par);
+				Exec_suc((void*)par);
+				//usleep(1000000);
+				// 100 milisegundos...
+				/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
+				printf("Soy la sucursal '%d' y me llego mensaje '%s' de '%d' bytes.\n",
+				sucId, readbuffer, bytes);*/
 
-					// Usar usleep para dormir una cantidad de microsegundos
+				// Usar usleep para dormir una cantidad de microsegundos
 
-					// Cerrar lado de lectura del pipe
+				// Cerrar lado de lectura del pipe
 
-					// Para terminar, el proceso hijo debe llamar a _exit,
-					// debido a razones documentadas aqui:
-					// https://goo.gl/Yxyuxb
-					_exit(EXIT_SUCCESS);
-				}
+				// Para terminar, el proceso hijo debe llamar a _exit,
+				// debido a razones documentadas aqui:
+				// https://goo.gl/Yxyuxb
+				//_exit(EXIT_SUCCESS);
 			}
 			// error
 			else {
@@ -90,11 +90,25 @@ int main(int argc, char** argv) {
 		}
 		else if(!strncmp("list", commandBuf, strlen("list"))){
 			for(int i = 0; i < array_size; i++){
-				printf("%d:", suc_array[i].ID);
+				printf("%d, clients amount: %d:", suc_array[i].ID, suc_array[i].clients_amount);
 				for(int j = 0; j < suc_array[i].clients_amount; j++){
 					printf("%6d ",suc_array[i].accountid[j]);
 				}
 			printf("\n");
+			}
+		}
+		else if(!strncmp("kill", commandBuf, strlen("kill"))){
+			int id = atoi(&commandBuf[4]);
+			if(!id){
+				printf("El comando ''kill'' debe ser ingresado junto con un id valido.");
+			}
+			else{
+				par->sucid = id;
+				Suc dead_sucursal = Find_suc((void*)par);
+				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
+				else{
+					write(dead_sucursal.pipein[1], "die", 3);
+				}
 			}
 		}
 		else {

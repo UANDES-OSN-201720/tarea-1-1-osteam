@@ -49,13 +49,28 @@ void* Talk_suc(void* par){
 // Necesary params: suc_array, array_size, clients, sucid
 void* Init_suc(void* par){
 	Params* var = (Params*)par;
-	var->suc_array = realloc(var->suc_array, var->array_size);
 	var->suc_array[var->array_size - 1].ID = var->sucid;
 	pipe(var->suc_array[var->array_size - 1].pipein);
 	pipe(var->suc_array[var->array_size - 1].pipeout);
-	var->suc_array->clients_amount = var->clients;
+	var->suc_array[var->array_size - 1].clients_amount = var->clients;
+	printf("%d\n", var->suc_array[var->array_size - 1].clients_amount);
 	for(int i = 0; i < var->clients; i++){
 		var->suc_array[var->array_size - 1].accountid[i] = i+1;
 	}
 	return NULL;
 }
+
+
+void* Delete_suc(void* par){
+	Params* var = (Params*) par;
+	for(int i = 0; i < var->array_size; i++){
+		if(var->suc_array[i].ID == var->sucid) var->suc_array[i].ID = 0;
+	}
+	return NULL;
+}
+
+
+
+
+
+
