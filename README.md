@@ -30,6 +30,17 @@ determinada de clientes, mientras que las demás sucursales no tenían presencia
 mayores problemas, en lugar de usar un realloc para modificar el tamaño del arreglo, hicimos un arreglo de tamaño
 fijo. Con esto solucionamos parcialmente el problema, dado que nuestro objetivo era intentar ocupar el realloc.
 
+El comando quit termina todos los procesos activos, tanto el proceso padre, el cual es la oficina matriz, también llamado
+banco, como los procesos hijos, los cuales serían cada una de las sucursales existentes.
+
+El comando kill funciona de manera intuitiva. Es cosa de ingresar el comando, seguido del ID de la sucursal que se 
+quiere terminar, y lo que logra el comando es eliminar la sucursal del array de sucursales, así como también matar
+el proceso. Kill manda un mensaje desde el banco hasta una sucursal, entregándole la instrucción "die", lo que hace que este 
+proceso se elimine por su cuenta, y no que un proceso externo lo elimine.
+
+Al igual que kill, list tiene un funcionamiento bastante simple. Lo que hace es listar la lista de sucursales
+que existen hasta ese momento, junto con las cuentas asociadas a cada una de esas sucursales.
+
   
 
 ##Actualmente las funciones del archivo child.h no estan definidas. Además, las funciones que fueron definidas
