@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <semaphore.h>
 #include "child.h"
 
 // Cuenten con este codigo monolitico en una funcion
@@ -24,6 +25,9 @@ int main(int argc, char** argv) {
 	Params* par = calloc(1, sizeof(Params));
 	par->suc_array = suc_array;
 	printf("Bienvenido a Banco '%d'\n", bankId);
+	//sem_t sempai;
+	//sem_t oniichan;
+	//sem_post(&sempai);
 
 	while (true) {
 		printf(">>");
@@ -42,32 +46,35 @@ int main(int argc, char** argv) {
 			// es potencialmente peligroso, dado que accidentalmente
 			// pueden iniciarse procesos sin control.
 			// Buscar en Google "fork bomb"
+			array_size++;
 			pid_t sucid = fork();
 
-			if (sucid > 0) {
-				printf("%d hiya! 1\n", sucid);
+			if (sucid > 0) {\
+				//sem_wait(&sempai);
 				static int N;
 				char* n = &commandBuf[4];
 				N = atoi(n);
 				if(!N) N = 1000;
 				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
-				
-				array_size++;
 				par->sucid = sucid;
 				par->clients = N;
 				par->array_size = array_size;
 				Init_suc((void*)par);
+				//sem_post(&oniichan);
 				continue;
 			}
 			// Proceso de sucursal
 			else if (!sucid) {
-				int sucId = getpid() % 1000;
+				usleep(1000000);
+				//sem_wait(&oniichan);
+				int sucId = getpid();
 				printf("Hola, soy la sucursal '%d'\n", sucId);
 				par->array_size = array_size;
 				par->sucid = sucId;
+				Init_suc((void*)par);
 				par->sucursal = Find_suc((void*)par);
+				//sem_post(&sempai);
 				Exec_suc((void*)par);
-				//usleep(1000000);
 				// 100 milisegundos...
 				/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
 				printf("Soy la sucursal '%d' y me llego mensaje '%s' de '%d' bytes.\n",
@@ -107,7 +114,7 @@ int main(int argc, char** argv) {
 				Suc dead_sucursal = Find_suc((void*)par);
 				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
 				else{
-					write(dead_sucursal.pipein[1], "die", 3);
+					write(dead_sucursal.pipein[1], "omae wa mou shindeiru", 3);
 				}
 			}
 		}
