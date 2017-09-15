@@ -42,22 +42,22 @@ int main(int argc, char** argv) {
 			// es potencialmente peligroso, dado que accidentalmente
 			// pueden iniciarse procesos sin control.
 			// Buscar en Google "fork bomb"
-			pid_t sucid = fork();
+			
+			int pipebnk2suc[2] = pipe(&pipebnk2suc);
+			int pipesuc2bnk[2] = pipe(&pipesuc2bnk);
+			static int N;
+			char* n = &commandBuf[4];
+			N = atoi(n);
+			if(!N) N = 1000;
+			
+			pid_t sucid = fork()
 
 			if (sucid > 0) {
 				printf("%d hiya! 1\n", sucid);
-				static int N;
-				char* n = &commandBuf[4];
-				N = atoi(n);
-				if(!N) N = 1000;
 				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
 				
 				array_size++;
-				par->sucid = sucid;
-				par->clients = N;
-				par->array_size = array_size;
-				Init_suc((void*)par);
-				continue;
+				suc_array[array_size - 1] = Init_suc(sucid);
 			}
 			// Proceso de sucursal
 			else if (!sucid) {
