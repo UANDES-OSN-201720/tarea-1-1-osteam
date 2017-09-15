@@ -56,3 +56,12 @@ blanco. Tampoco desarrollamos los comandos dump, que son los que guardan un arch
 lo que es la segunda parte de esta primera tarea. Por último, el comando kill creemos que fue hecho de manera correcta, es decir, 
 la sucursal efectivamente lee el mensaje a través del pipe, y logra terminar el proceso, pero no logramos eliminarlo 
 del array de sucursales.
+
+Tarea 1 parte 2
+
+Como en la primera entrega de la tarea 1 aun no teniamos la estructura del banco funcionando correctamente, decidimos hacer cambios.
+Ahora los pipes se le pasan a las sucursales simplemente al declararlos antes de la funcion fork(), el thread de la sucursal (para leer un pipe)
+es declarado en el mismo proceso hijo y por ultimo, las estructuras seran tratadas como objetos y para eso hacemos una funcion Init y Delete para crearlas
+eliminarlas haciendo el debido manejo de memoria en cada caso.
+
+
