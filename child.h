@@ -1,11 +1,18 @@
 #include "functions.h"
 #include <pthread.h>
+#include <signal.h>
 
 // Necesary params: sucursal
 void* listen_bank(void* par){
 	Params* var = (Params*)par;
+	char* readbufer = calloc(STRING_SIZE, sizeof(char));
 	while(true){
-		read(var->sucursal.pipein[0], var->sucursal.readbufersuc, sizeof(var->sucursal.readbufersuc));
+		read(var->pipein[0], &readbufer, sizeof(var->msg));
+		if(strcmp(readbufer, "die") == 0){
+			write(var->pipeout[1], "I died", 6);
+			Delete_suc(par);
+			kill(0, SIGTERM);
+		}
 	}
 	return NULL;
 }
@@ -15,22 +22,12 @@ void talk_bank(int pid){
 	
 }
 
-// Necesary params: suc_array, array_size, sucursal, sucid
-void Exec_suc(void* par){
+void Exec_suc(int* pipein, int* pipeout, void* par){
+	pthread_t listen_thread;
 	Params* var = (Params*)par;
-	Suc this_sucursal;
-	for(int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == getpid()){
-			this_sucursal = var->suc_array[i];
-			pthread_create(&var->suc_array[i].listen_thread, NULL, &listen_bank, &var->sucursal);
-		}
-	}
-	while(true){
-		if(strcmp(this_sucursal.readbufersuc, "die") == 0){
-			Delete_suc(par);
-			 _exit(EXIT_SUCCESS);
-		 }
-	}
+	var->pipein = pipein;
+	var->pipeout = pipeout;
+	pthread_create(&listen_thread, NULL, &listen_bank, &var);
 }
 
 

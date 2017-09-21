@@ -21,7 +21,10 @@ int main(int argc, char** argv) {
 	const int bankId = getpid() % 1000;
 	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
+	char* readbufersuc = calloc(STRING_SIZE, sizeof(char));
 	Params* par = calloc(1, sizeof(Params));
+	
+	
 	par->suc_array = suc_array;
 	printf("Bienvenido a Banco '%d'\n", bankId);
 
@@ -43,30 +46,32 @@ int main(int argc, char** argv) {
 			// pueden iniciarse procesos sin control.
 			// Buscar en Google "fork bomb"
 			
-			int pipebnk2suc[2] = pipe(&pipebnk2suc);
-			int pipesuc2bnk[2] = pipe(&pipesuc2bnk);
+			int pipebnk2suc[2];
+			int pipesuc2bnk[2];
+			pipe(pipebnk2suc);
+			pipe(pipesuc2bnk);
+			
 			static int N;
 			char* n = &commandBuf[4];
 			N = atoi(n);
 			if(!N) N = 1000;
 			
-			pid_t sucid = fork()
+			pid_t sucid = fork();
 
 			if (sucid > 0) {
 				printf("%d hiya! 1\n", sucid);
 				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
+				close(pipebnk2suc[0]);
+				close(pipesuc2bnk[1]);
 				
 				array_size++;
-				suc_array[array_size - 1] = Init_suc(sucid);
+				suc_array[array_size - 1] = *Init_suc(sucid, pipebnk2suc, pipesuc2bnk);
 			}
 			// Proceso de sucursal
 			else if (!sucid) {
 				int sucId = getpid() % 1000;
 				printf("Hola, soy la sucursal '%d'\n", sucId);
-				par->array_size = array_size;
-				par->sucid = sucId;
-				par->sucursal = Find_suc((void*)par);
-				Exec_suc((void*)par);
+				Exec_suc(pipebnk2suc, pipesuc2bnk, par);
 				//usleep(1000000);
 				// 100 milisegundos...
 				/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
@@ -90,10 +95,7 @@ int main(int argc, char** argv) {
 		}
 		else if(!strncmp("list", commandBuf, strlen("list"))){
 			for(int i = 0; i < array_size; i++){
-				printf("%d, clients amount: %d:", suc_array[i].ID, suc_array[i].clients_amount);
-				for(int j = 0; j < suc_array[i].clients_amount; j++){
-					printf("%6d ",suc_array[i].accountid[j]);
-				}
+				printf("%d:", suc_array[i].ID);
 			printf("\n");
 			}
 		}
@@ -103,11 +105,13 @@ int main(int argc, char** argv) {
 				printf("El comando ''kill'' debe ser ingresado junto con un id valido.");
 			}
 			else{
-				par->sucid = id;
-				Suc dead_sucursal = Find_suc((void*)par);
+				Suc dead_sucursal = Find_suc(id, suc_array, array_size);
 				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
 				else{
-					write(dead_sucursal.pipein[1], "die", 3);
+					if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
+						perror("Parent: Failed to send value to child ");
+						exit(EXIT_FAILURE);
+					}
 				}
 			}
 		}
