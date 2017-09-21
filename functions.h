@@ -30,6 +30,8 @@ typedef struct{
 Suc Find_suc(void* par){
 	Params* var = (Params*)par;
 	for(int i = 0; i < var->array_size; i++){
+		printf("size %d\n", var->array_size);
+		printf("Findsuc %d, %d\n", var->suc_array[i].ID, var->sucid);
 		if(var->suc_array[i].ID == var->sucid){
 			return var->suc_array[i];
 		}
@@ -53,7 +55,6 @@ void* Init_suc(void* par){
 	pipe(var->suc_array[var->array_size - 1].pipein);
 	pipe(var->suc_array[var->array_size - 1].pipeout);
 	var->suc_array[var->array_size - 1].clients_amount = var->clients;
-	printf("%d\n", var->suc_array[var->array_size - 1].clients_amount);
 	for(int i = 0; i < var->clients; i++){
 		var->suc_array[var->array_size - 1].accountid[i] = i+1;
 	}
@@ -64,7 +65,12 @@ void* Init_suc(void* par){
 void* Delete_suc(void* par){
 	Params* var = (Params*) par;
 	for(int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == var->sucid) var->suc_array[i].ID = 0;
+		if(var->suc_array[i].ID == var->sucid){
+			char * msg = "nani!";
+			write(var->suc_array[i].pipeout[1], msg, strlen(msg));
+			var->suc_array[i].ID = 0;
+		}
+		printf("%d\n",i); 
 	}
 	return NULL;
 }
