@@ -75,6 +75,73 @@ void* Delete_suc(void* par){
 	return NULL;
 }
 
+void* Dump_suc(void* par){
+	Params* var = (Params*) par;
+	for (int i = 0; i < var->array_size; i++){
+		if(var->suc_array[i].ID == var->sucid){
+			FILE *dump;
+			int a,b;
+			char str[80];
+			sprintf(str, "%d", var->sucid);
+			char *filename = strcat("dump_",str);
+			filename = strcat(filename, ".csv");
+			dump = fopen(filename, "w+");
+			fprintf(dump, "tipo de transacción, medio de origen, cuenta de origen, cuenta de destino");	
+			for (a = 0; a<30; a++){
+				for (b = 0; b<30; b++){
+					// Aqui va la estructura de como se arma la tabla
+				}
+			}
+			fclose(dump);
+		}
+	}
+	return NULL;			
+}
+void* Dump_accs(void* par){
+	Params* var = (Params*) par;
+	for (int i = 0; i < var->array_size; i++){
+		if(var->suc_array[i].ID == var->sucid){
+			FILE *dump;
+			int a,b;
+			char str[80];
+			sprintf(str, "%d", var->sucid);
+			char *filename = strcat("dump_accs_",str);
+			filename = strcat(filename, ".csv");
+			dump = fopen(filename, "w+");
+			fprintf(dump, "numero de cuenta, saldo");	
+			for (a = 0; a<30; a++){
+				for (b = 0; b<30; b++){
+					// Aqui va la estructura de como se arma la tabla
+				}
+			}
+			fclose(dump);
+		}
+	}
+	return NULL;			
+}
+
+void* Dump_errs(void* par){
+	Params* var = (Params*) par;
+	for (int i = 0; i < var->array_size; i++){
+		if(var->suc_array[i].ID == var->sucid){
+			FILE *dump;
+			int a,b;
+			char str[80];
+			sprintf(str, "%d", var->sucid);
+			char *filename = strcat("dump_errs_",str);
+			filename = strcat(filename, ".csv");
+			dump = fopen(filename, "w+");
+			fprintf(dump, "Tipo de error(1: falta de saldo; 2: numero de cuenta invalido), saldo previo a la transaccion, monto que se quiso retirar");	
+			for (a = 0; a<30; a++){
+				for (b = 0; b<30; b++){
+					// Aqui va la estructura de como se arma la tabla
+				}
+			}
+			fclose(dump);
+		}
+	}
+	return NULL;			
+}
 
 
 

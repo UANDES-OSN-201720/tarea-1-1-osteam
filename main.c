@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <semaphore.h>
+#include <pthread.h>
 #include "child.h"
 
 // Cuenten con este codigo monolitico en una funcion
@@ -114,10 +115,53 @@ int main(int argc, char** argv) {
 				Suc dead_sucursal = Find_suc((void*)par);
 				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
 				else{
-					write(dead_sucursal.pipein[1], "omae wa mou shindeiru", 3);
+					write(dead_sucursal.pipein[1], "Omae wa mou shindeiru", 21);
 				}
 			}
 		}
+		else if (!strncmp("dump", commandBuf, strlen("dump"))){
+			int id = atoi (&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump'' debe ser ingresado junto con un id valido");
+			}
+			else{
+				par->sucid = id;
+				Suc dump_sucursal = Find_suc((void*)par);
+				if(!dump_sucursal.ID) printf("El comando ''dump'' debe ser ingresado junto con un id valido: id no encontrado.");
+				else{
+					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
+				}
+			}
+		}
+		else if (!strncmp("dump_accs", commandBuf, strlen("dump_accs"))){
+			int id = atoi (&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump_accs'' debe ser ingresado junto con un id valido");
+			}
+			else{
+				par->sucid = id;
+				Suc dump_sucursal = Find_suc((void*)par);
+				if(!dump_sucursal.ID) printf("El comando ''dump_accs'' debe ser ingresado junto con un id valido: id no encontrado.");
+				else{
+					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
+				}
+			}
+		}
+		else if (!strncmp("dump_errs", commandBuf, strlen("dump_errs"))){
+			int id = atoi (&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump_errs'' debe ser ingresado junto con un id valido");
+			}
+			else{
+				par->sucid = id;
+				Suc dump_sucursal = Find_suc((void*)par);
+				if(!dump_sucursal.ID) printf("El comando ''dump_errs'' debe ser ingresado junto con un id valido: id no encontrado.");
+				else{
+					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
+				}
+			}
+		}
+					
 		else {
 			fprintf(stderr, "Comando no reconocido.\n");
 		}

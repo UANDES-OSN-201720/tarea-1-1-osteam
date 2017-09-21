@@ -24,7 +24,7 @@ void Exec_suc(void* par){
 		if(var->suc_array[i].ID == var->sucid){
 			printf("holiii\n");
 			this_sucursal = var->suc_array[i];
-			pthread_create(&var->suc_array[i].listen_thread, NULL, &listen_bank, &var->sucursal);
+			//pthread_create(&var->suc_array[i].listen_thread, NULL, &listen_bank, &var->sucursal);
 		}
 	}
 	while(true){
