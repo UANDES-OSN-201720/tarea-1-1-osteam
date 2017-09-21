@@ -45,10 +45,11 @@ void Delete_suc(Suc** sucursal){
 Suc Find_suc(int suc_id, Suc* suc_array, int array_size){
 	for(int i = 0; i < array_size; i++){
 		if(suc_array[i].ID == suc_id){
-			return suc_array[i];
+			return suc_array[i];			
 		}
 	}
 	Suc sucursal;
+	sucursal.ID =0;
 	return sucursal;
 }
 

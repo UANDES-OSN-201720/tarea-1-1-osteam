@@ -28,6 +28,7 @@ void Exec_suc(int* pipein, int* pipeout, void* par){
 	var->pipein = pipein;
 	var->pipeout = pipeout;
 	pthread_create(&listen_thread, NULL, &listen_bank, &var);
+	pthread_join(listen_thread, NULL);
 }
 
 

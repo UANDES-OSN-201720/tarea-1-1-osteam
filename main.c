@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 	const int bankId = getpid() % 1000;
 	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
-	char* readbufersuc = calloc(STRING_SIZE, sizeof(char));
+	//char* readbufersuc = calloc(STRING_SIZE, sizeof(char));
 	Params* par = calloc(1, sizeof(Params));
 	
 	
@@ -38,6 +38,9 @@ int main(int argc, char** argv) {
 		printf("Comando ingresado: '%s'\n", commandBuf);
 
 		if (!strncmp("quit", commandBuf, strlen("quit"))) {
+			free(par);
+			free(suc_array);
+			free(commandBuf);
 			break;
 		}
 		else if (!strncmp("init", commandBuf, strlen("init"))) {
@@ -100,18 +103,25 @@ int main(int argc, char** argv) {
 			}
 		}
 		else if(!strncmp("kill", commandBuf, strlen("kill"))){
+			printf("Sucursal encontrada\n");
 			int id = atoi(&commandBuf[4]);
+			printf("id de la sucursal: %d\n", id);
 			if(!id){
-				printf("El comando ''kill'' debe ser ingresado junto con un id valido.");
+				printf("El comando ''kill'' debe ser ingresado junto con un id valido.\n");
 			}
 			else{
+				printf("Entramos al ciclo\n");
 				Suc dead_sucursal = Find_suc(id, suc_array, array_size);
-				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
+				printf("se encuentra la sucursal\n");
+				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
 				else{
-					if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
+					printf("Entramos al else\n");
+					write(dead_sucursal.pipein[1], "die", sizeof("die"));
+					
+					/*if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
 						perror("Parent: Failed to send value to child ");
-						exit(EXIT_FAILURE);
-					}
+						exit(EXIT_FAILURE);					
+					}*/
 				}
 			}
 		}
