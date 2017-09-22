@@ -7,9 +7,9 @@ void* listen_bank(void* par){
 	Params* var = (Params*)par;
 	char* readbufer = calloc(STRING_SIZE, sizeof(char));
 	while(true){
-		read(var->pipein[0], &readbufer, sizeof(var->msg));
-		if(strcmp(readbufer, "die") == 0){
-			write(var->pipeout[1], "I died", 6);
+		read(var->pipein[0], &readbufer, sizeof(readbufer));
+		if(strcmp(readbufer, "omaewa mo shindeiru") == 0){
+			write(var->pipeout[1], "NANI!?", 6);
 			Delete_suc(par);
 			kill(0, SIGTERM);
 		}

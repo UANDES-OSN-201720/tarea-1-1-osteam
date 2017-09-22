@@ -23,12 +23,15 @@ int main(int argc, char** argv) {
 	int array_size = 0;
 	//char* readbufersuc = calloc(STRING_SIZE, sizeof(char));
 	Params* par = calloc(1, sizeof(Params));
+	pthread_t bnk_listen;
 	
 	
-	par->suc_array = suc_array;
+	par->suc_array = &suc_array;
 	printf("Bienvenido a Banco '%d'\n", bankId);
 
 	while (true) {
+		pthread_create(&bnk_listen, NULL, &Listen_suc, &par);
+		pthread_join(bnk_listen, NULL);
 		printf(">>");
 		getline(&commandBuf, &bufsize, stdin);
 
@@ -116,7 +119,7 @@ int main(int argc, char** argv) {
 				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
 				else{
 					printf("Entramos al else\n");
-					write(dead_sucursal.pipein[1], "die", sizeof("die"));
+					write(dead_sucursal.pipein[1], "omaewa mo shindeiru", sizeof("omaewa mo shindeiru"));
 					
 					/*if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
 						perror("Parent: Failed to send value to child ");

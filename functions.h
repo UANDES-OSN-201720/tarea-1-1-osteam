@@ -20,8 +20,8 @@ typedef struct{
 	int clients;
 	int* pipein;
 	int* pipeout;
-	Suc* suc_array;
-	Suc sucursal;
+	Suc** suc_array;
+	Suc* sucursal;
 	char* msg;
 }Params;
 
@@ -57,6 +57,14 @@ Suc Find_suc(int suc_id, Suc* suc_array, int array_size){
 void Talk_suc(int sucid, char* msg, Suc* array, int array_size){
 	Suc sucursal = Find_suc(sucid, array, array_size);
 	write(sucursal.pipein[1], msg, strlen(msg)+1);
+}
+
+void* Listen_suc(void* par){
+	Params* var = (Params*)par;
+	char* bufer = var->sucursal->readbuferbnk;
+	read(var->sucursal->pipein[0], bufer, sizeof(bufer));
+	if(strcmp(bufer, "NANI!?") == 0) Delete_suc(var->sucursal);
+	return NULL;
 }
 
 
