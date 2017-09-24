@@ -18,20 +18,20 @@
 int main(int argc, char** argv) {
 	size_t bufsize = 512;
 	char* commandBuf = malloc(sizeof(char)*bufsize);
+	char* kill_command = "omaewa mo shindeiru";
 	const int bankId = getpid() % 1000;
 	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
-	//char* readbufersuc = calloc(STRING_SIZE, sizeof(char));
 	Params* par = calloc(1, sizeof(Params));
 	pthread_t bnk_listen;
 	
-	
 	par->suc_array = &suc_array;
+	par->array_size = array_size;
 	printf("Bienvenido a Banco '%d'\n", bankId);
 
+	pthread_create(&bnk_listen, NULL, &Listen_suc, &par);
+	
 	while (true) {
-		pthread_create(&bnk_listen, NULL, &Listen_suc, &par);
-		pthread_join(bnk_listen, NULL);
 		printf(">>");
 		getline(&commandBuf, &bufsize, stdin);
 
@@ -41,6 +41,13 @@ int main(int argc, char** argv) {
 		printf("Comando ingresado: '%s'\n", commandBuf);
 
 		if (!strncmp("quit", commandBuf, strlen("quit"))) {
+			for(int i = 0; i < array_size; i++){
+				if(&suc_array[i] != NULL){
+					write(suc_array[i].pipein[1], kill_command, sizeof(kill_command));
+					Delete_suc(&suc_array[i]);
+				}
+			}
+			pthread_join(bnk_listen, NULL);
 			free(par);
 			free(suc_array);
 			free(commandBuf);
@@ -72,6 +79,7 @@ int main(int argc, char** argv) {
 				
 				array_size++;
 				suc_array[array_size - 1] = *Init_suc(sucid, pipebnk2suc, pipesuc2bnk);
+				par->sucursal = &suc_array[array_size - 1];
 			}
 			// Proceso de sucursal
 			else if (!sucid) {

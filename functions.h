@@ -61,9 +61,19 @@ void Talk_suc(int sucid, char* msg, Suc* array, int array_size){
 
 void* Listen_suc(void* par){
 	Params* var = (Params*)par;
-	char* bufer = var->sucursal->readbuferbnk;
-	read(var->sucursal->pipein[0], bufer, sizeof(bufer));
-	if(strcmp(bufer, "NANI!?") == 0) Delete_suc(var->sucursal);
+	char* bufer;
+	printf("holaa\n");
+	while(true){
+		for(int i = 0; i < var->array_size; i++){
+			if(&var->suc_array[i] != NULL){
+				bufer = var->suc_array[i]->readbuferbnk;
+				read(var->suc_array[i]->pipein[0], bufer, sizeof(bufer));
+				if(strcmp(bufer, "NANI!?") == 0){ 
+					Delete_suc(&var->sucursal);
+				}
+			}
+		}
+	}
 	return NULL;
 }
 
