@@ -1,37 +1,43 @@
 #include "functions.h"
 #include <pthread.h>
+#include <signal.h>
 
 // Necesary params: sucursal
 void* listen_bank(void* par){
 	Params* var = (Params*)par;
+	char* readbufer = calloc(STRING_SIZE, sizeof(char));
 	while(true){
-		read(var->sucursal.pipein[0], var->sucursal.readbufersuc, sizeof(var->sucursal.readbufersuc));
+		read(var->pipein[0], &readbufer, sizeof(readbufer));
+		if(strcmp(readbufer, "omaewa mo shindeiru") == 0){
+			write(var->pipeout[1], "NANI!?", 6);
+			kill(0, SIGTERM);
+		}
 	}
 	return NULL;
 }
 
+void* write_bank(void* par){
+	Params* var = (Params*)par;
+	char* msg = "nada";
+	while(true){
+		write(var->pipeout[1], msg, sizeof(msg));
+	}
+	return NULL;
+}
 
 void talk_bank(int pid){
 	
 }
 
-// Necesary params: suc_array, array_size, sucursal, sucid
-void Exec_suc(void* par){
+void Exec_suc(int* pipein, int* pipeout, void* par){
+	pthread_t listen_thread;
+	pthread_t write_thread;
 	Params* var = (Params*)par;
-	Suc this_sucursal;
-	for(int i = 0; i < var->array_size; i++){
-		printf("%d, %d\n", var->suc_array[i].ID, var->sucid);
-		if(var->suc_array[i].ID == var->sucid){
-			printf("holiii\n");
-			this_sucursal = var->suc_array[i];
-			//pthread_create(&var->suc_array[i].listen_thread, NULL, &listen_bank, &var->sucursal);
-		}
-	}
-	while(true){
-		if(strcmp(this_sucursal.readbufersuc, "omae wa mou shindeiru") == 0){
-			printf("nani!");
-			Delete_suc(par);
-			 _exit(EXIT_SUCCESS);
-		 }
-	}
+	var->pipein = pipein;
+	var->pipeout = pipeout;
+	pthread_create(&listen_thread, NULL, &listen_bank, &var);
+	pthread_join(listen_thread, NULL);
+	pthread_create(&write_thread, NULL, &write_bank, &var);
 }
+
+

@@ -5,143 +5,79 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+const unsigned int STRING_SIZE = 80;
 
 typedef struct{
 	int ID;
-	int pipein[2];
-	int pipeout[2];
-	pthread_t listen_thread;
-	int clients_amount;
-	int accountid[1000];
-	char readbufersuc[80];
-	char readbuferbnk[80];
+	int* pipein;
+	int* pipeout;
+	char* readbuferbnk;
 } Suc;
 
 typedef struct{
 	int sucid;
 	int array_size;
 	int clients;
-	Suc* suc_array;
-	Suc sucursal;
+	int* pipein;
+	int* pipeout;
+	Suc** suc_array;
+	Suc* sucursal;
 	char* msg;
 }Params;
 
-// Necesary params: array_size, suc_array, sucid
-Suc Find_suc(void* par){
-	Params* var = (Params*)par;
-	for(int i = 0; i < var->array_size; i++){
-		printf("size %d\n", var->array_size);
-		printf("Findsuc %d, %d\n", var->suc_array[i].ID, var->sucid);
-		if(var->suc_array[i].ID == var->sucid){
-			return var->suc_array[i];
+// Allocates memory for the structure and all it's components.
+Suc* Init_suc(int id, int* pipein, int* pipeout){
+	Suc* sucursal = calloc(50, sizeof(Suc));
+	sucursal->ID = id;
+	sucursal->readbuferbnk = malloc(sizeof(char) * STRING_SIZE);
+	sucursal->pipein = pipein;
+	sucursal->pipeout = pipeout;
+	return sucursal;
+}
+
+// Deallocates the memory for the specific sucursal.
+void Delete_suc(Suc** sucursal){
+	free((*sucursal)->readbuferbnk);
+	free(*sucursal);
+	*sucursal = NULL;
+}
+
+Suc Find_suc(int suc_id, Suc* suc_array, int array_size){
+	for(int i = 0; i < array_size; i++){
+		if(suc_array[i].ID == suc_id){
+			return suc_array[i];			
 		}
 	}
 	Suc sucursal;
-	sucursal.ID = 0;
+	sucursal.ID =0;
 	return sucursal;
 }
 
 // Necesary params: sucursal, msg
-void* Talk_suc(void* par){
+void Talk_suc(int sucid, char* msg, Suc* array, int array_size){
+	Suc sucursal = Find_suc(sucid, array, array_size);
+	write(sucursal.pipein[1], msg, strlen(msg)+1);
+}
+
+void* Listen_suc(void* par){
 	Params* var = (Params*)par;
-	write(var->sucursal.pipein[1], var->msg, strlen(var->msg)+1);
-	return NULL;
-}
-
-// Necesary params: suc_array, array_size, clients, sucid
-void* Init_suc(void* par){
-	Params* var = (Params*)par;
-	var->suc_array[var->array_size - 1].ID = var->sucid;
-	pipe(var->suc_array[var->array_size - 1].pipein);
-	pipe(var->suc_array[var->array_size - 1].pipeout);
-	var->suc_array[var->array_size - 1].clients_amount = var->clients;
-	for(int i = 0; i < var->clients; i++){
-		var->suc_array[var->array_size - 1].accountid[i] = i+1;
-	}
-	return NULL;
-}
-
-
-void* Delete_suc(void* par){
-	Params* var = (Params*) par;
-	for(int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == var->sucid){
-			char * msg = "nani!";
-			write(var->suc_array[i].pipeout[1], msg, strlen(msg));
-			var->suc_array[i].ID = 0;
+	char* bufer;
+	printf("holaa\n");
+	while(true){
+		for(int i = 0; i < var->array_size; i++){
+			if(&var->suc_array[i] != NULL){
+				bufer = var->suc_array[i]->readbuferbnk;
+				read(var->suc_array[i]->pipein[0], bufer, sizeof(bufer));
+				if(strcmp(bufer, "NANI!?") == 0){ 
+					Delete_suc(&var->sucursal);
+				}
+			}
 		}
-		printf("%d\n",i); 
 	}
 	return NULL;
 }
 
-void* Dump_suc(void* par){
-	Params* var = (Params*) par;
-	for (int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == var->sucid){
-			FILE *dump;
-			int a,b;
-			char str[80];
-			sprintf(str, "%d", var->sucid);
-			char *filename = strcat("dump_",str);
-			filename = strcat(filename, ".csv");
-			dump = fopen(filename, "w+");
-			fprintf(dump, "tipo de transacción, medio de origen, cuenta de origen, cuenta de destino");	
-			for (a = 0; a<30; a++){
-				for (b = 0; b<30; b++){
-					// Aqui va la estructura de como se arma la tabla
-				}
-			}
-			fclose(dump);
-		}
-	}
-	return NULL;			
-}
-void* Dump_accs(void* par){
-	Params* var = (Params*) par;
-	for (int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == var->sucid){
-			FILE *dump;
-			int a,b;
-			char str[80];
-			sprintf(str, "%d", var->sucid);
-			char *filename = strcat("dump_accs_",str);
-			filename = strcat(filename, ".csv");
-			dump = fopen(filename, "w+");
-			fprintf(dump, "numero de cuenta, saldo");	
-			for (a = 0; a<30; a++){
-				for (b = 0; b<30; b++){
-					// Aqui va la estructura de como se arma la tabla
-				}
-			}
-			fclose(dump);
-		}
-	}
-	return NULL;			
-}
 
-void* Dump_errs(void* par){
-	Params* var = (Params*) par;
-	for (int i = 0; i < var->array_size; i++){
-		if(var->suc_array[i].ID == var->sucid){
-			FILE *dump;
-			int a,b;
-			char str[80];
-			sprintf(str, "%d", var->sucid);
-			char *filename = strcat("dump_errs_",str);
-			filename = strcat(filename, ".csv");
-			dump = fopen(filename, "w+");
-			fprintf(dump, "Tipo de error(1: falta de saldo; 2: numero de cuenta invalido), saldo previo a la transaccion, monto que se quiso retirar");	
-			for (a = 0; a<30; a++){
-				for (b = 0; b<30; b++){
-					// Aqui va la estructura de como se arma la tabla
-				}
-			}
-			fclose(dump);
-		}
-	}
-	return NULL;			
-}
 
 
 

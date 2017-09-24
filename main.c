@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <semaphore.h>
-#include <pthread.h>
 #include "child.h"
 
 // Cuenten con este codigo monolitico en una funcion
@@ -20,16 +18,19 @@
 int main(int argc, char** argv) {
 	size_t bufsize = 512;
 	char* commandBuf = malloc(sizeof(char)*bufsize);
+	char* kill_command = "omaewa mo shindeiru";
 	const int bankId = getpid() % 1000;
 	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
 	Params* par = calloc(1, sizeof(Params));
-	par->suc_array = suc_array;
+	pthread_t bnk_listen;
+	
+	par->suc_array = &suc_array;
+	par->array_size = array_size;
 	printf("Bienvenido a Banco '%d'\n", bankId);
-	//sem_t sempai;
-	//sem_t oniichan;
-	//sem_post(&sempai);
 
+	pthread_create(&bnk_listen, NULL, &Listen_suc, &par);
+	
 	while (true) {
 		printf(">>");
 		getline(&commandBuf, &bufsize, stdin);
@@ -40,6 +41,16 @@ int main(int argc, char** argv) {
 		printf("Comando ingresado: '%s'\n", commandBuf);
 
 		if (!strncmp("quit", commandBuf, strlen("quit"))) {
+			for(int i = 0; i < array_size; i++){
+				if(&suc_array[i] != NULL){
+					write(suc_array[i].pipein[1], kill_command, sizeof(kill_command));
+					Delete_suc(&suc_array[i]);
+				}
+			}
+			pthread_join(bnk_listen, NULL);
+			free(par);
+			free(suc_array);
+			free(commandBuf);
 			break;
 		}
 		else if (!strncmp("init", commandBuf, strlen("init"))) {
@@ -47,35 +58,35 @@ int main(int argc, char** argv) {
 			// es potencialmente peligroso, dado que accidentalmente
 			// pueden iniciarse procesos sin control.
 			// Buscar en Google "fork bomb"
-			array_size++;
+			
+			int pipebnk2suc[2];
+			int pipesuc2bnk[2];
+			pipe(pipebnk2suc);
+			pipe(pipesuc2bnk);
+			
+			static int N;
+			char* n = &commandBuf[4];
+			N = atoi(n);
+			if(!N) N = 1000;
+			
 			pid_t sucid = fork();
 
-			if (sucid > 0) {\
-				//sem_wait(&sempai);
-				static int N;
-				char* n = &commandBuf[4];
-				N = atoi(n);
-				if(!N) N = 1000;
+			if (sucid > 0) {
+				printf("%d hiya! 1\n", sucid);
 				printf("Sucursal creada con ID '%d' y %d cuentas\n", sucid, N);
-				par->sucid = sucid;
-				par->clients = N;
-				par->array_size = array_size;
-				Init_suc((void*)par);
-				//sem_post(&oniichan);
-				continue;
+				close(pipebnk2suc[0]);
+				close(pipesuc2bnk[1]);
+				
+				array_size++;
+				suc_array[array_size - 1] = *Init_suc(sucid, pipebnk2suc, pipesuc2bnk);
+				par->sucursal = &suc_array[array_size - 1];
 			}
 			// Proceso de sucursal
 			else if (!sucid) {
-				usleep(1000000);
-				//sem_wait(&oniichan);
-				int sucId = getpid();
+				int sucId = getpid() % 1000;
 				printf("Hola, soy la sucursal '%d'\n", sucId);
-				par->array_size = array_size;
-				par->sucid = sucId;
-				Init_suc((void*)par);
-				par->sucursal = Find_suc((void*)par);
-				//sem_post(&sempai);
-				Exec_suc((void*)par);
+				Exec_suc(pipebnk2suc, pipesuc2bnk, par);
+				//usleep(1000000);
 				// 100 milisegundos...
 				/*int bytes = read(bankPipe[0], readbuffer, sizeof(readbuffer));
 				printf("Soy la sucursal '%d' y me llego mensaje '%s' de '%d' bytes.\n",
@@ -98,70 +109,33 @@ int main(int argc, char** argv) {
 		}
 		else if(!strncmp("list", commandBuf, strlen("list"))){
 			for(int i = 0; i < array_size; i++){
-				printf("%d, clients amount: %d:", suc_array[i].ID, suc_array[i].clients_amount);
-				for(int j = 0; j < suc_array[i].clients_amount; j++){
-					printf("%6d ",suc_array[i].accountid[j]);
-				}
+				printf("%d:", suc_array[i].ID);
 			printf("\n");
 			}
 		}
 		else if(!strncmp("kill", commandBuf, strlen("kill"))){
+			printf("Sucursal encontrada\n");
 			int id = atoi(&commandBuf[4]);
+			printf("id de la sucursal: %d\n", id);
 			if(!id){
-				printf("El comando ''kill'' debe ser ingresado junto con un id valido.");
+				printf("El comando ''kill'' debe ser ingresado junto con un id valido.\n");
 			}
 			else{
-				par->sucid = id;
-				Suc dead_sucursal = Find_suc((void*)par);
-				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.");
+				printf("Entramos al ciclo\n");
+				Suc dead_sucursal = Find_suc(id, suc_array, array_size);
+				printf("se encuentra la sucursal\n");
+				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
 				else{
-					write(dead_sucursal.pipein[1], "Omae wa mou shindeiru", 21);
-				}
-			}
-		}
-		else if (!strncmp("dump", commandBuf, strlen("dump"))){
-			int id = atoi (&commandBuf[4]);
-			if(!id){
-				printf("El comando ''dump'' debe ser ingresado junto con un id valido");
-			}
-			else{
-				par->sucid = id;
-				Suc dump_sucursal = Find_suc((void*)par);
-				if(!dump_sucursal.ID) printf("El comando ''dump'' debe ser ingresado junto con un id valido: id no encontrado.");
-				else{
-					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
-				}
-			}
-		}
-		else if (!strncmp("dump_accs", commandBuf, strlen("dump_accs"))){
-			int id = atoi (&commandBuf[4]);
-			if(!id){
-				printf("El comando ''dump_accs'' debe ser ingresado junto con un id valido");
-			}
-			else{
-				par->sucid = id;
-				Suc dump_sucursal = Find_suc((void*)par);
-				if(!dump_sucursal.ID) printf("El comando ''dump_accs'' debe ser ingresado junto con un id valido: id no encontrado.");
-				else{
-					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
-				}
-			}
-		}
-		else if (!strncmp("dump_errs", commandBuf, strlen("dump_errs"))){
-			int id = atoi (&commandBuf[4]);
-			if(!id){
-				printf("El comando ''dump_errs'' debe ser ingresado junto con un id valido");
-			}
-			else{
-				par->sucid = id;
-				Suc dump_sucursal = Find_suc((void*)par);
-				if(!dump_sucursal.ID) printf("El comando ''dump_errs'' debe ser ingresado junto con un id valido: id no encontrado.");
-				else{
-					write(dump_sucursal.pipein[1], "Generando respaldo...", 21);
-				}
-			}
-		}
+					printf("Entramos al else\n");
+					write(dead_sucursal.pipein[1], "omaewa mo shindeiru", sizeof("omaewa mo shindeiru"));
 					
+					/*if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
+						perror("Parent: Failed to send value to child ");
+						exit(EXIT_FAILURE);					
+					}*/
+				}
+			}
+		}
 		else {
 			fprintf(stderr, "Comando no reconocido.\n");
 		}
