@@ -18,7 +18,6 @@
 int main(int argc, char** argv) {
 	size_t bufsize = 512;
 	char* commandBuf = malloc(sizeof(char)*bufsize);
-	char* kill_command = "omaewa mo shindeiru";
 	const int bankId = getpid() % 1000;
 	Suc* suc_array = calloc(50, sizeof(Suc));
 	int array_size = 0;
@@ -127,7 +126,7 @@ int main(int argc, char** argv) {
 				if (!dead_sucursal.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
 				else{
 					printf("Entramos al else\n");
-					write(dead_sucursal.pipein[1], "omaewa mo shindeiru", sizeof("omaewa mo shindeiru"));
+					write(dead_sucursal.pipein[1], kill_command, sizeof(kill_command));
 					
 					/*if(write(dead_sucursal.pipein[1], "die", sizeof("die")) != sizeof("die")){
 						perror("Parent: Failed to send value to child ");
@@ -135,6 +134,42 @@ int main(int argc, char** argv) {
 					}*/
 				}
 			}
+		}
+		else if(!strncmp("dump", commandBuf, strlen("dump"))){
+			int id = atoi(&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump'' debe ser ingresado junto con un id valido.\n");
+			}
+			else{
+				Suc dump_suc = Find_suc(id, suc_array, array_size);
+				if (!dump_suc.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
+				else write(dump_suc.pipein[1], dump_command, sizeof(dump_command));
+			}
+		}
+		else if (!strncmp("dump_accs", commandBuf, strlen("dump_accs"))){
+			int id = atoi(&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump_accs'' debe ser ingresado junto con un id valido.\n");
+			}
+			else{
+				Suc accs_suc = Find_suc(id, suc_array, array_size);
+				if (!accs_suc.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
+				else write(accs_suc.pipein[1], accs_command, sizeof(accs_command));
+			}
+			
+			
+		}
+		else if (!strncmp("dump_errs", commandBuf, strlen("dump_errs"))){
+			int id = atoi(&commandBuf[4]);
+			if(!id){
+				printf("El comando ''dump_errs'' debe ser ingresado junto con un id valido.\n");
+			}
+			else{
+				Suc errs_suc = Find_suc(id, suc_array, array_size);
+				if (!errs_suc.ID) printf("El comando ''kill'' debe ser ingresado junto con un id valido: id no encontrado.\n");
+				else write(errs_suc.pipein[1], errs_command, sizeof(errs_command));
+			}
+			
 		}
 		else {
 			fprintf(stderr, "Comando no reconocido.\n");

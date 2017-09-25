@@ -77,6 +77,28 @@ void* Listen_suc(void* par){
 	return NULL;
 }
 
+void create_csv(char *filename, char* columns, /*int *trans,*/ int cols, int rows){//estado de prueba
+	printf("\n Creando respaldo...");
+	FILE *dump;
+	filename = strcat(filename, ".csv");
+	dump = fopen(filename, "w+");
+	fprintf(dump, "%s", columns);
+	for (int i = 0; i< rows; i++){
+		fprintf(dump, "\n");
+		for (int j = 0; j < cols; j++){
+			//fprintf(dump,"%d, ", *(trans+i*rows+j));
+		}
+	}
+	if (strcmp(columns, "tipo de transaccion, medio de origen, cuenta de origen, cuenta de destino")){
+		fprintf (dump, "\n Tipos de transacciones\n 1: Deposito\n 2: Retiro");
+	}
+	else if (strcmp(columns, "tipo de error, numero de cuenta, saldo previo, monto a retirar")){
+		fprintf (dump, "\n Tipos de errores\n 1: Falta de saldo\n 2: Numero de cuenta invalido");
+	}
+	fclose(dump);
+	printf("\n Respaldo creado con nombre %s", filename);
+}
+
 
 
 
