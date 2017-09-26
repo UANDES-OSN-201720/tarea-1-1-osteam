@@ -63,5 +63,8 @@ Como en la primera entrega de la tarea 1 aun no teniamos la estructura del banco
 Ahora los pipes se le pasan a las sucursales simplemente al declararlos antes de la funcion fork(), el thread de la sucursal (para leer un pipe)
 es declarado en el mismo proceso hijo y por ultimo, las estructuras seran tratadas como objetos y para eso hacemos una funcion Init y Delete para crearlas
 eliminarlas haciendo el debido manejo de memoria en cada caso.
+Dada la cantidad de problemas que nos trajo el comando kill, y puesto que todos los comandos de tipo dump aún no estaban 
+siquiera escritos, decidimos que era hora de empezar a hacer el arreglo de dicho comando y la creación de los 3 últimos por separado para poder avanzar. La creación de los comandos dump no fue dificil, pero hasta el momento aún no hay manera de 
+comprobar si estos comandos funcionan correctamente.
 
 
