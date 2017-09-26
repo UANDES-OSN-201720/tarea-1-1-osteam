@@ -2,12 +2,14 @@
 #include <pthread.h>
 #include <signal.h>
 
+
 char* kill_command = "omaewa mo shindeiru";
 char* dump_command = "respaldo transacciones";
 char* accs_command ="respaldo saldos";
 char* errs_command = "respaldo errores";
 char* columns; //Para los comandos dump, marca los nombres de las columnas
 char* filename; //Nombre del archivo que se va a guardar al ocupar un comando dump
+
 
 // Necesary params: sucursal
 void* listen_bank(void* par){

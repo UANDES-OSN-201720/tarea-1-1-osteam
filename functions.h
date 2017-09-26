@@ -77,6 +77,7 @@ void* Listen_suc(void* par){
 	return NULL;
 }
 
+
 void create_csv(char *filename, char* columns, /*int *trans,*/ int cols, int rows){//estado de prueba
 	printf("\n Creando respaldo...");
 	FILE *dump;
@@ -98,6 +99,7 @@ void create_csv(char *filename, char* columns, /*int *trans,*/ int cols, int row
 	fclose(dump);
 	printf("\n Respaldo creado con nombre %s", filename);
 }
+
 
 
 
